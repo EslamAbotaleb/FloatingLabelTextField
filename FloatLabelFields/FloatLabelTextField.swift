@@ -13,11 +13,92 @@
 //
 
 import UIKit
+//extension UILabel
+//{
+//    func addImage(imageName: String)
+//    {
+//        let attachment:NSTextAttachment = NSTextAttachment()
+//        attachment.image = UIImage(named: imageName)
+//
+//        let attachmentString:NSAttributedString = NSAttributedString(attachment: attachment)
+//        let myString:NSMutableAttributedString = NSMutableAttributedString(string: self.text!)
+//        myString.append(attachmentString)
+//
+//        self.attributedText = myString
+//    }
+//}
+extension UILabel {
+    /**
+     This function adding image with text on label.
+
+     - parameter text: The text to add
+     - parameter image: The image to add
+     - parameter imageBehindText: A boolean value that indicate if the imaga is behind text or not
+     - parameter keepPreviousText: A boolean value that indicate if the function keep the actual text or not
+     */
+    func addTextWithImage(text: String, image: UIImage, imageBehindText: Bool, keepPreviousText: Bool) {
+                    let lAttachment = NSTextAttachment()
+        lAttachment.image = image
+
+        // 1pt = 1.32px
+        let lFontSize = round(self.font.pointSize * 1.32)
+        let lRatio = image.size.width / image.size.height
+
+        lAttachment.bounds = CGRect(x: 0, y: ((self.font.capHeight - lFontSize) / 2).rounded(), width: lRatio * lFontSize, height: lFontSize)
+
+        let lAttachmentString = NSAttributedString(attachment: lAttachment)
+
+        if imageBehindText {
+            let lStrLabelText: NSMutableAttributedString
+
+            if keepPreviousText, let lCurrentAttributedString = self.attributedText {
+                lStrLabelText = NSMutableAttributedString(attributedString: lCurrentAttributedString)
+                lStrLabelText.append(NSMutableAttributedString(string: text))
+            } else {
+                lStrLabelText = NSMutableAttributedString(string: text)
+            }
+
+            lStrLabelText.append(lAttachmentString)
+            self.attributedText = lStrLabelText
+        } else {
+            let lStrLabelText: NSMutableAttributedString
+
+            if keepPreviousText, let lCurrentAttributedString = self.attributedText {
+                lStrLabelText = NSMutableAttributedString(attributedString: lCurrentAttributedString)
+                lStrLabelText.append(NSMutableAttributedString(attributedString: lAttachmentString))
+                lStrLabelText.append(NSMutableAttributedString(string: text))
+            } else {
+                lStrLabelText = NSMutableAttributedString(attributedString: lAttachmentString)
+                lStrLabelText.append(NSMutableAttributedString(string: text))
+            }
+
+            self.attributedText = lStrLabelText
+        }
+    }
+
+    func removeImage() {
+        let text = self.text
+        self.attributedText = nil
+        self.text = text
+    }
+}
+//extension UIImage {
+//    func toPngString() -> String? {
+//        let data = self.pngData()
+//        return data?.base64EncodedString(options: .endLineWithLineFeed)
+//    }
+//
+//    func toJpegString(compressionQuality cq: CGFloat) -> String? {
+//        let data = self.jpegData(compressionQuality: cq)
+//        return data?.base64EncodedString(options: .endLineWithLineFeed)
+//    }
+//}
 
 @IBDesignable class FloatLabelTextField: UITextField {
 	let animationDuration = 0.3
 	var title = UILabel()
-	
+    var icon = UIImage()
+
 	// MARK:- Properties
 	override var accessibilityLabel:String? {
 		get {
@@ -35,6 +116,8 @@ import UIKit
 	override var placeholder:String? {
 		didSet {
 			title.text = placeholder
+            
+            title.addTextWithImage(text: placeholder ?? "", image: UIImage(named: "right")!, imageBehindText: true, keepPreviousText: false)
 			title.sizeToFit()
 		}
 	}
@@ -115,7 +198,7 @@ import UIKit
 		if let txt = text , !txt.isEmpty {
 			var top = ceil(title.font.lineHeight + hintYPadding)
 			top = min(top, maxTopInset())
-			r = UIEdgeInsetsInsetRect(r, UIEdgeInsetsMake(top, 0.0, 0.0, 0.0))
+            r = r.inset(by: UIEdgeInsets(top: top, left: 0.0, bottom: 0.0, right: 0.0))
 		}
 		return r.integral
 	}
@@ -125,27 +208,28 @@ import UIKit
 		if let txt = text , !txt.isEmpty {
 			var top = ceil(title.font.lineHeight + hintYPadding)
 			top = min(top, maxTopInset())
-			r = UIEdgeInsetsInsetRect(r, UIEdgeInsetsMake(top, 0.0, 0.0, 0.0))
+            r = r.inset(by: UIEdgeInsets(top: top, left: 0.0, bottom: 0.0, right: 0.0))
 		}
 		return r.integral
 	}
 	
-	override func clearButtonRect(forBounds bounds:CGRect) -> CGRect {
-		var r = super.clearButtonRect(forBounds: bounds)
-		if let txt = text , !txt.isEmpty {
-			var top = ceil(title.font.lineHeight + hintYPadding)
-			top = min(top, maxTopInset())
-			r = CGRect(x:r.origin.x, y:r.origin.y + (top * 0.5), width:r.size.width, height:r.size.height)
-		}
-		return r.integral
-	}
-	
+//	override func clearButtonRect(forBounds bounds:CGRect) -> CGRect {
+//		var r = super.clearButtonRect(forBounds: bounds)
+//		if let txt = text , !txt.isEmpty {
+//			var top = ceil(title.font.lineHeight + hintYPadding)
+//			top = min(top, maxTopInset())
+//			r = CGRect(x:r.origin.x, y:r.origin.y + (top * 0.5), width:r.size.width, height:r.size.height)
+//		}
+//		return r.integral
+//	}
+//
 	// MARK:- Public Methods
 	
 	// MARK:- Private Methods
 	fileprivate func setup() {
-		borderStyle = UITextBorderStyle.none
-		titleActiveTextColour = tintColor
+        borderStyle = UITextField.BorderStyle.none
+        titleActiveTextColour = .gray
+//        tintColor
 		// Set up title label
 		title.alpha = 0.0
 		title.font = titleFont
@@ -154,6 +238,8 @@ import UIKit
 			title.text = str
 			title.sizeToFit()
 		}
+
+        
 		self.addSubview(title)
 	}
 
@@ -177,7 +263,7 @@ import UIKit
 	
 	fileprivate func showTitle(_ animated:Bool) {
 		let dur = animated ? animationDuration : 0
-		UIView.animate(withDuration: dur, delay:0, options: [UIViewAnimationOptions.beginFromCurrentState, UIViewAnimationOptions.curveEaseOut], animations:{
+        UIView.animate(withDuration: dur, delay:0, options: [UIView.AnimationOptions.beginFromCurrentState, UIView.AnimationOptions.curveEaseOut], animations:{
 				// Animation
 				self.title.alpha = 1.0
 				var r = self.title.frame
@@ -188,7 +274,7 @@ import UIKit
 	
 	fileprivate func hideTitle(_ animated:Bool) {
 		let dur = animated ? animationDuration : 0
-		UIView.animate(withDuration: dur, delay:0, options: [UIViewAnimationOptions.beginFromCurrentState, UIViewAnimationOptions.curveEaseIn], animations:{
+        UIView.animate(withDuration: dur, delay:0, options: [UIView.AnimationOptions.beginFromCurrentState, UIView.AnimationOptions.curveEaseIn], animations:{
 			// Animation
 			self.title.alpha = 0.0
 			var r = self.title.frame
