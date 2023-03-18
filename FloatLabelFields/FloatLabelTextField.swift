@@ -50,14 +50,12 @@ extension UILabel {
 
         if imageBehindText {
             let lStrLabelText: NSMutableAttributedString
-
             if keepPreviousText, let lCurrentAttributedString = self.attributedText {
                 lStrLabelText = NSMutableAttributedString(attributedString: lCurrentAttributedString)
                 lStrLabelText.append(NSMutableAttributedString(string: text))
             } else {
                 lStrLabelText = NSMutableAttributedString(string: text)
             }
-
             lStrLabelText.append(lAttachmentString)
             self.attributedText = lStrLabelText
         } else {
@@ -82,17 +80,7 @@ extension UILabel {
         self.text = text
     }
 }
-//extension UIImage {
-//    func toPngString() -> String? {
-//        let data = self.pngData()
-//        return data?.base64EncodedString(options: .endLineWithLineFeed)
-//    }
-//
-//    func toJpegString(compressionQuality cq: CGFloat) -> String? {
-//        let data = self.jpegData(compressionQuality: cq)
-//        return data?.base64EncodedString(options: .endLineWithLineFeed)
-//    }
-//}
+
 
 @IBDesignable class FloatLabelTextField: UITextField {
 	let animationDuration = 0.3
@@ -116,7 +104,6 @@ extension UILabel {
 	override var placeholder:String? {
 		didSet {
 			title.text = placeholder
-            
             title.addTextWithImage(text: placeholder ?? "", image: UIImage(named: "right")!, imageBehindText: true, keepPreviousText: false)
 			title.sizeToFit()
 		}
